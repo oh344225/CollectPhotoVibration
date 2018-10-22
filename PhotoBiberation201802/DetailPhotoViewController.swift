@@ -17,18 +17,19 @@ class DetailPhotoViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-		/*
         // Do any additional setup after loading the view.
 		DetailImage.image = selectImg
 		// 画像のアスペクト比を維持しUIImageViewサイズに収まるように表示
 		DetailImage.contentMode = UIViewContentMode.scaleAspectFit
-	*/
+	
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+	
+	
     
 
     /*

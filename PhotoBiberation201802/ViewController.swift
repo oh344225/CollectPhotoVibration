@@ -20,8 +20,7 @@ class ViewController: UIViewController {
 	var photoAssets: Array! = [PHAsset]()
 	
 	//選択画像
-	var selectedImage: UIImage?
-
+	var selectImage:UIImage?
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
@@ -133,8 +132,21 @@ class ViewController: UIViewController {
 	*/
 	// Segue 準備
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+		if (segue.identifier == "DetailPhotoViewController"){
+			let SubView: DetailPhotoViewController = (segue.destination as? DetailPhotoViewController)!
+			//DetailviewcontrollerにselectImgに受け渡し
+			SubView.selectImg = selectImage
+		}
 		
 	}
+	
+	/// Storyboadでunwind sequeを引くために必要
+	@IBAction func unwindToFirstView(segue: UIStoryboardSegue) {
+	}
+
+	
+	
+	
 	
 }
 
@@ -160,12 +172,34 @@ extension ViewController: UICollectionViewDelegate{
 	
 	//セルが選択されたとき
 	func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-		//選択された画像の詳細
-		performSegue(withIdentifier: "DetailPhotoViewController", sender: nil)
 		print("select")
 		print(indexPath.row)
-		print(photoAssets[indexPath.row])
+		//print(photoAssets[indexPath.row])
+		//画像オブジェクト取得
+		let manager = PHImageManager()
 		
+		//取得オプション
+		let option = PHImageRequestOptions()
+		//highquality高画質の状態を１回で引き渡す
+		option.deliveryMode = .highQualityFormat
+		//同期処理にする、バックグラウンド処理をやめる
+		option.isSynchronous = true
+		manager.requestImage(for: photoAssets[indexPath.row], targetSize: PHImageManagerMaximumSize, contentMode: PHImageContentMode.aspectFill, options: option){(image,info) in
+			//imageにUIImageが渡ってくる。
+			//print(image!)
+			self.selectImage = image
+			print(self.selectImage as Any)
+		}
+		
+		//if 画像が取得できたら画像詳細画面へ遷移
+		if selectImage != nil{
+			//print("if")
+			//選択された画像の詳細
+			performSegue(withIdentifier: "DetailPhotoViewController", sender: nil)
+		}
+		//print(self.selectImage)
+		
+
 	}
 	
 	
