@@ -21,6 +21,9 @@ class ViewController: UIViewController {
 	
 	//選択画像
 	var selectImage:UIImage?
+	var PhotoDATA :PHAsset?
+	//選択画像の心拍数
+	///var heartrate:Double?
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
@@ -134,13 +137,15 @@ class ViewController: UIViewController {
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
 		if (segue.identifier == "DetailPhotoViewController"){
 			let SubView: DetailPhotoViewController = (segue.destination as? DetailPhotoViewController)!
-			//DetailviewcontrollerにselectImgに受け渡し
-			SubView.selectImg = selectImage
+			//DetailviewcontrollerにselectImg,heartrateデータを受け渡し
+			SubView.PHAsset = PhotoDATA
+			//SubView.selectImg = selectImage
+			//SubView.photoheartrate = heartrate
 		}
 		
 	}
 	
-	/// Storyboadでunwind sequeを引くために必要
+	/// Storyboadでunwind sequeを引くために必要,記述
 	@IBAction func unwindToFirstView(segue: UIStoryboardSegue) {
 	}
 
@@ -152,7 +157,7 @@ class ViewController: UIViewController {
 
 extension ViewController :UICollectionViewDataSource{
 	
-	//
+	//cellの総数カウントして準備
 	func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
 		//print("photoAssets:\(photoAssets.count)")
 		return photoAssets.count
@@ -175,9 +180,15 @@ extension ViewController: UICollectionViewDelegate{
 		print("select")
 		print(indexPath.row)
 		//print(photoAssets[indexPath.row])
+		PhotoDATA = photoAssets[indexPath.row]
+		
+		//画像データ取得処理
+		//getImageData(photoAsset: photoAssets[indexPath.row])
+		/*
+		///////////////////////////////////
+		//画像データ取得
 		//画像オブジェクト取得
 		let manager = PHImageManager()
-		
 		//取得オプション
 		let option = PHImageRequestOptions()
 		//highquality高画質の状態を１回で引き渡す
@@ -190,17 +201,121 @@ extension ViewController: UICollectionViewDelegate{
 			self.selectImage = image
 			print(self.selectImage as Any)
 		}
+		///////////////////////////////////
+		*/
+		/*
+		//exif取得処理
+		getExifData(photoAsset: photoAssets[indexPath.row],exifCompletionHandler: {(text) -> Void in
+			//text -> double変換
+			if(text == nil){
+				print(text as Any)
+				//self.heartrate = nil
+			}else{
+				// if, guard などを使って切り分ける
+				if let p = Double(text!){
+					print(p)
+					//self.heartrate = p
+				}
+			}
+		})
+		*/
+		/*
+		///////////////////////////////////
+		//exif情報取得
+		let editOptions = PHContentEditingInputRequestOptions()
+		editOptions.isNetworkAccessAllowed = true
+		photoAssets[indexPath.row].requestContentEditingInput(with: editOptions, completionHandler: {(contentEditingInput, _) -> Void in
+			
+			let url = contentEditingInput?.fullSizeImageURL
+			//画像nilの条件処理
+			if let inputImage:CIImage = CoreImage.CIImage(contentsOf: url!){
+				//print("画像:\(inputImage)")
+				let meta:NSDictionary? = inputImage.properties as NSDictionary?
+				//print("exif:\(meta?["{Exif}"] as? NSDictionary)")
+				let exif:NSDictionary? = meta?["{Exif}"] as? NSDictionary
+				let text = exif?.object(forKey: kCGImagePropertyExifUserComment) as! String?
+				//print(text)
+				//text -> double変換
+				if(text == nil){
+					//print(text as Any)
+					self.heartrate = nil
+				}else{
+					// if, guard などを使って切り分ける
+					if let p = Double(text!){
+						//print(p)
+						self.heartrate = p
+					}
+				}
+			}
+		})
+		///////////////////////////////////
+		*/
 		
-		//if 画像が取得できたら画像詳細画面へ遷移
-		if selectImage != nil{
+		//if 画像が取得できたら画像詳細画面へ遷移(画像のurl情報を引き継ぎ）
+		if PhotoDATA != nil{
 			//print("if")
 			//選択された画像の詳細
 			performSegue(withIdentifier: "DetailPhotoViewController", sender: nil)
 		}
 		//print(self.selectImage)
-		
-
 	}
+	
+	/*
+	//画像データ取得関数
+	func getImageData(photoAsset:PHAsset){
+		//画像データ取得
+		//画像オブジェクト取得
+		let manager = PHImageManager()
+		//取得オプション
+		let option = PHImageRequestOptions()
+		//highquality高画質の状態を１回で引き渡す
+		option.deliveryMode = .highQualityFormat
+		//同期処理にする、バックグラウンド処理をやめる
+		option.isSynchronous = true
+		manager.requestImage(for: photoAsset, targetSize: PHImageManagerMaximumSize, contentMode: PHImageContentMode.aspectFill, options: option){(image,info) in
+			//imageにUIImageが渡ってくる。
+			//print(image!)
+			self.selectImage = image
+			print(self.selectImage as Any)
+		}
+	}
+	*/
+	/*
+	//exif情報取得関数,非同期処理にして参照実行時の不具合なくす。
+	func getExifData(photoAsset:PHAsset,exifCompletionHandler: @escaping (_ text:String?) -> Void){
+		//exif情報取得
+		let editOptions = PHContentEditingInputRequestOptions()
+		editOptions.isNetworkAccessAllowed = true
+		
+		photoAsset.requestContentEditingInput(with: editOptions, completionHandler: {(contentEditingInput, _) -> Void in
+			
+			let url = contentEditingInput?.fullSizeImageURL
+			//画像nilの条件処理
+			if let inputImage:CIImage = CoreImage.CIImage(contentsOf: url!){
+				//print("画像:\(inputImage)")
+				let meta:NSDictionary? = inputImage.properties as NSDictionary?
+				//print("exif:\(meta?["{Exif}"] as? NSDictionary)")
+				let exif:NSDictionary? = meta?["{Exif}"] as? NSDictionary
+				let text = exif?.object(forKey: kCGImagePropertyExifUserComment) as! String?
+				exifCompletionHandler(text)
+				/*
+				//print(text)
+				//text -> double変換
+				if(text == nil){
+					//print(text as Any)
+					self.heartrate = nil
+				}else{
+					// if, guard などを使って切り分ける
+					if let p = Double(text!){
+						//print(p)
+						self.heartrate = p
+					}
+				}
+				*/
+			}
+		})
+	}
+	*/
 	
 	
 	
