@@ -85,8 +85,7 @@
                                     <navigationItem id="ks7-zb-XDC">
                                         <barButtonItem key="leftBarButtonItem" title="back" id="yFv-41-lxE">
                                             <connections>
-                                                <action selector="unwindToViewcontoroller:" destination="TyR-Nf-Ef6" id="uCT-9a-EW8"/>
-                                                <segue destination="TyR-Nf-Ef6" kind="unwind" unwindAction="unwindToFirstViewWithSegue:" id="ZkU-e2-h3S"/>
+                                                <segue destination="TyR-Nf-Ef6" kind="unwind" identifier="backToTop" unwindAction="unwindToFirstViewWithSegue:" id="ZkU-e2-h3S"/>
                                             </connections>
                                         </barButtonItem>
                                     </navigationItem>

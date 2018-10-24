@@ -21,10 +21,17 @@ class DetailPhotoViewController: UIViewController {
 	//写真メタデータ引き継ぎ
 	var photoheartrate :Double?
 	
+	//バイブレーションタイマー
+	var timer: Timer!
+	var nowPlaying = "true"
+	var bpm = 60.0
 	
+	
+	//１回だけ読み込み
     override func viewDidLoad() {
         super.viewDidLoad()
 		
+		//画像情報取得処理
 		getImageData(photoAsset: PHAsset)
 		getExifData(photoAsset: PHAsset,exifCompletionHandler: {(text) -> Void in
 			//text -> double変換
@@ -32,16 +39,19 @@ class DetailPhotoViewController: UIViewController {
 				self.photoheartrate = nil
 				print(text as Any)
 				print(self.photoheartrate as Any)
+				//self.nowPlaying = "false"
 			}else{
 				// if, guard などを使って切り分ける
 				if let p = Double(text!){
 					self.photoheartrate = p
 					print(p)
 					print(self.photoheartrate as Any)
+					self.timerloop(bpm: self.photoheartrate!/60)
 				}
 			}
 		})
         // Do any additional setup after loading the view.
+		//画像表示
 		DetailImage.image = selectImg
 		// 画像のアスペクト比を維持しUIImageViewサイズに収まるように表示
 		DetailImage.contentMode = UIViewContentMode.scaleAspectFit
@@ -49,7 +59,7 @@ class DetailPhotoViewController: UIViewController {
 		print("Detailmetadata: \(self.photoheartrate as Any)")
 		//
 		//print(PHAsset)
-	
+		
     }
 
     override func didReceiveMemoryWarning() {
@@ -65,6 +75,46 @@ class DetailPhotoViewController: UIViewController {
         // Pass the selected object to the new view controller.
     }
     */
+	
+	
+	//vibration処理ループ
+	//タイマーループ処理構造体
+	func timerloop(bpm: Double){
+		print("looooooooooop in")
+		print(bpm)
+		timer = Timer.scheduledTimer(timeInterval: bpm,
+									 target: self,
+									 selector: #selector(self.vibrateLoop),
+									 userInfo: nil,
+									 repeats: true)
+		timer.fire()
+		print(self.nowPlaying)
+		self.nowPlaying = "false"
+		print("looooooooooop")
+	}
+	
+	
+	@objc func vibrateLoop(){
+		AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+	}
+	
+	
+	// Segue 準備
+	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+		if (segue.identifier == "backToTop"){
+			print("back")
+			if(nowPlaying != "true"){
+				print(self.nowPlaying)
+				timer.invalidate()
+				nowPlaying = "true"
+			}
+			print("looooooooooop out")
+			
+		}
+	}
+	
+	
+	
 }
 
 extension DetailPhotoViewController: UICollectionViewDelegate{

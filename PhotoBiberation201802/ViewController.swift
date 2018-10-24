@@ -145,8 +145,9 @@ class ViewController: UIViewController {
 		
 	}
 	
-	/// Storyboadでunwind sequeを引くために必要,記述
+	/// Storyboadでunwind sequeを引くために必要,記述この処理へ戻ってくる。
 	@IBAction func unwindToFirstView(segue: UIStoryboardSegue) {
+		//print("back")
 	}
 
 	
